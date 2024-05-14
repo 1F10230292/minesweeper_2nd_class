@@ -1,11 +1,69 @@
 .container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
   height: 100vh;
   min-height: 100vh;
   padding: 0 0.5rem;
+}
+
+.boardStyle {
+  /* position: absolute; */
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 720px;
+  height: 720px;
+
+  /* visibility: hidden; */
+  background-color: grey;
+  border: solid 20px;
+  border-color: rgb(204 202 202) gray gray rgb(204 202 202);
+}
+
+.cellStyle {
+  box-sizing: border-box;
+  width: 70px;
+  height: 70px;
+  background-color: rgb(150 147 147);
+  border: solid 10px;
+
+  /* 値を４つ指定： 上の値 右の値 下の値 左の値 */
+  border-color: rgb(204 202 202) gray gray rgb(204 202 202);
+}
+
+.tapPosStyle {
+  width: 30px;
+  height: 30px;
+  background: url('~/src/assets/images/icons.png') no-repeat;
+}
+
+.boardStyle2 {
+  box-sizing: border-box;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 720px;
+  height: 720px;
+  background-color: grey;
+  border: solid 20px;
+  border-color: rgb(204 202 202) gray gray rgb(204 202 202);
+}
+
+.innerStyle {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  background-color: rgb(150 147 147);
+  border: solid 1px;
+
+  /* 値を４つ指定： 上の値 右の値 下の値 左の値 */
+  border-color: rgb(204 202 202) gray gray rgb(204 202 202);
 }
 
 .sampleStyle {

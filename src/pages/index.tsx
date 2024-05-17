@@ -27,12 +27,13 @@ const plotBomb = (x: number, y: number, bombMap: number[][]) => {
   let bombX = getRandomInt(0, 8);
 
   let bombY = getRandomInt(0, 8);
+
   while (defaultBombCounts(bombMap) < 10) {
-    // 被っていっれば変更なしで返す
+    // 被っていれば変更なしで返す
     if (bombX === x && bombY === y) {
       continue;
     }
-    //そうでなければ爆弾を連ダムにプロットする
+    //そうでなければ爆弾をランダムにプロットする
     else {
       //cellに何もない & タップした場所以外である時にplot可能
       if (bombMap[y][x] === 0) {
@@ -46,7 +47,7 @@ const plotBomb = (x: number, y: number, bombMap: number[][]) => {
       }
     }
   }
-
+  //bomb生成と同時にcell周囲のbombの数を表示
   for (let y = 0; y < 9; y++) {
     for (let x = 0; x < 9; x++) {
       let bombCounter = 0;
@@ -70,12 +71,16 @@ const plotBomb = (x: number, y: number, bombMap: number[][]) => {
 
   return bombMap;
 };
+const tapCell = (x: number, y: number, userInput: number[][]) => {
+  userInput[y][x] = -1;
+  return userInput;
+};
 
 const Home = () => {
   const [tapPos, setTapPos] = useState(0);
   // bombの位置を更新し、記憶する関数、useState
   const [bombMap, setBombMap] = useState([
-    [2, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -100,16 +105,19 @@ const Home = () => {
   //cellをクリックした際の挙動の関数
   const clickHandler = (x: number, y: number) => {
     console.log(x, y);
+
     //bombMap本体をいじるのはご法度、ゆえにクローンをして、それをいじる。
     const newMap = structuredClone(bombMap);
+    const newInput = structuredClone(userInput);
     const newPlotBomb = plotBomb(x, y, newMap);
-
+    const newTapCell = tapCell(x, y, newInput);
     // const bombCounter = ()=>{
     //   const toFlat = newPlotBomb.flat();
     //   toFlat.filter((cellNum)=>cellNum === 11)
     // }
 
     setBombMap(newPlotBomb);
+    setUserInput(newTapCell);
   };
 
   return (
@@ -123,8 +131,8 @@ const Home = () => {
               className={styles.cellStyle}
               key={`${x}-${y}`}
               onClick={() => clickHandler(x, y)}
-              //クリックした座標に１を代入し、spot=== 1の時visibility: `hidden` にするようにする
-              // style={{ visibility: `hidden` }}
+              //クリックしたuserInputの座標に-1を代入し、spot=== -1の時visibility: `hidden` にするようにする
+              style={{ visibility: spot === -1 ? `hidden` : `visible` }}
             >
               {/* {if(spot=== 0){
                   <div className={styles.tapPosStyle} style={{backgroundPosition: `${-30 * tapPos}px, 0px`}}></div>

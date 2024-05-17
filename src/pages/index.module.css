@@ -18,6 +18,8 @@
   height: 720px;
 
   /* visibility: hidden; */
+
+  /* visibility: visible; */
   background-color: grey;
   border: solid 20px;
   border-color: rgb(204 202 202) gray gray rgb(204 202 202);

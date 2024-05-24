@@ -10,111 +10,6 @@ const directions = [
   [0, 1],
   [1, 1],
 ];
-const getRandomInt = (min: number, max: number) => {
-  // Math.random()は0以上1未満の値を返すため、適切な範囲に変換する
-  //min~max間の整数を返す関数を設定
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
-const defaultBombSeries = (bombMap: number[][]) => {
-  return bombMap.flat();
-};
-const defaultBombCounts = (bombMap: number[][]) => {
-  return defaultBombSeries(bombMap).filter((bomb) => bomb === 11).length;
-};
-// cellをクリックした際に生成されたbombを一時的に記憶する関数
-const plotBomb = (x: number, y: number, bombMap: number[][]) => {
-  let bombX = getRandomInt(0, 8);
-
-  let bombY = getRandomInt(0, 8);
-
-  while (defaultBombCounts(bombMap) < 10) {
-    // 被っていれば変更なしで返す
-    if (bombX === x && bombY === y) {
-      continue;
-    }
-    //そうでなければ爆弾をランダムにプロットする
-    else {
-      //cellに何もない & タップした場所以外である時にplot可能
-      if (bombMap[y][x] === 0) {
-        bombMap[bombY][bombX] = 11;
-        // 乱数を新しく生成
-        bombX = getRandomInt(0, 8);
-
-        bombY = getRandomInt(0, 8);
-      } else {
-        continue;
-      }
-    }
-  }
-  //bomb生成と同時にcell周囲のbombの数を表示
-  for (let y = 0; y < 9; y++) {
-    for (let x = 0; x < 9; x++) {
-      let bombCounter = 0;
-      if (bombMap[y][x] === 0) {
-        for (const direction of directions) {
-          {
-            if (
-              bombMap[y + direction[0]] !== undefined &&
-              bombMap[y + direction[0]][x + direction[1]] === 11
-            ) {
-              bombCounter += 1;
-
-              //newPlotBomb[y][x] = 1
-            }
-          }
-        }
-        bombMap[y][x] = bombCounter;
-      }
-    }
-  }
-
-  return bombMap;
-};
-const tapCell = (x: number, y: number, userInput: number[][], bombMap: number[][]) => {
-  userInput[y][x] = 1;
-
-  //自分が置いたcellの八方向のcellの数字が0の時userIptのcellをhiddenにする
-  for (const direction of directions) {
-    if (
-      bombMap[y + direction[0]] !== undefined &&
-      bombMap[y + direction[0]][x + direction[1]] === 0
-    ) {
-      userInput[y + direction[0]][x + direction[1]] = -2;
-      //cell=0の時のcellを開けて、さらにその開けたcellの八方向のうちどれかが0であればcellを開ける
-      for (const direction1 of directions) {
-        for (const direction2 of directions) {
-          if (
-            bombMap[y + direction1[0] + direction2[0]] !== undefined &&
-            bombMap[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] === 0
-          ) {
-            userInput[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] = -2;
-            for (const direction1 of directions) {
-              for (const direction2 of directions) {
-                for (const direction3 of directions) {
-                  if (
-                    bombMap[y + direction1[0] + direction2[0] + direction3[0]] !== undefined &&
-                    bombMap[y + direction1[0] + direction2[0] + direction3[0]][
-                      x + direction1[1] + direction2[1] + direction3[1]
-                    ] === 0
-                  ) {
-                    userInput[y + direction1[0] + direction2[0] + direction3[0]][
-                      x + direction1[1] + direction2[1] + direction3[1]
-                    ] = -2;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  console.log(userInput);
-  return userInput;
-};
-
 const Home = () => {
   // bombの位置を更新し、記憶する関数、useState
   const [bombMap, setBombMap] = useState([
@@ -153,50 +48,67 @@ const Home = () => {
     [-1, -1, -1, -1, -1, -1, -1, -1, -1],
     [-1, -1, -1, -1, -1, -1, -1, -1, -1],
   ];
+  const getRandomInt = (min: number, max: number) => {
+    // Math.random()は0以上1未満の値を返すため、適切な範囲に変換する
+    //min~max間の整数を返す関数を設定
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  };
 
-  for (let y = 0; y < 9; y++) {
-    for (let x = 0; x < 9; x++) {
-      if (userInput[y][x] === 1) {
-        board[y][x] = 0;
-        //cellの八方向に０がある時そのセルを開ける
-        for (const direction of directions) {
-          if (
-            bombMap[y + direction[0]] !== undefined &&
-            bombMap[y + direction[0]][x + direction[1]] === 0
-          ) {
-            board[y + direction[0]][x + direction[1]] = 0;
-            //同じことを繰り替えす
-            for (const direction1 of directions) {
-              for (const direction2 of directions) {
-                if (
-                  bombMap[y + direction1[0] + direction2[0]] !== undefined &&
-                  bombMap[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] ===
-                    0
-                ) {
-                  board[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] = 0;
-                }
-              }
-            }
-            if (bombMap[y][x] === 11) {
-              board[y][x] = bombMap[y][x];
-            }
-            if (1 <= bombMap[y][x] && bombMap[y][x] <= 8) {
-              board[y][x] = bombMap[y][x];
-            }
-          }
+  const defaultBombSeries = (bombMap: number[][]) => {
+    return bombMap.flat();
+  };
+  const defaultBombCounts = (bombMap: number[][]) => {
+    return defaultBombSeries(bombMap).filter((bomb) => bomb === 1).length;
+  };
+
+  // cellをクリックした際に生成されたbombを一時的に記憶する関数
+  const plotBomb = (x: number, y: number, bombMap: number[][]) => {
+    let bombX = getRandomInt(0, 8);
+
+    let bombY = getRandomInt(0, 8);
+
+    while (defaultBombCounts(bombMap) < 10) {
+      bombX = getRandomInt(0, 8);
+
+      bombY = getRandomInt(0, 8);
+      console.log(defaultBombCounts(bombMap));
+      // 被っていれば変更なしで返す
+      if (defaultBombCounts(bombMap) === 10) {
+        break;
+      }
+      if (bombX === x && bombY === y) {
+        continue;
+      }
+      //そうでなければ爆弾をランダムにプロットする
+      else {
+        //cellに何もない & タップした場所以外である時にplot可能
+        if (bombMap[y][x] === 0) {
+          bombMap[bombY][bombX] = 1;
+          // 乱数を新しく生成
+        } else {
+          continue;
         }
       }
     }
-  }
+
+    return bombMap;
+  };
+  const tapCell = (x: number, y: number, userInput: number[][]) => {
+    userInput[y][x] = 1;
+    // console.log(1);
+
+    return userInput;
+  };
+
   //cellをクリックした際の挙動の関数
   const clickHandler = (x: number, y: number) => {
-    console.log(x, y);
+    console.log(y, x);
 
     //bombMap本体をいじるのはご法度、ゆえにクローンをして、それをいじる。
     const newMap = structuredClone(bombMap);
     const newInput = structuredClone(userInput);
     const newPlotBomb = plotBomb(x, y, newMap);
-    const newTapCell = tapCell(x, y, newInput, newPlotBomb);
+    const newTapCell = tapCell(x, y, newInput);
     // const bombCounter = ()=>{
     //   const toFlat = newPlotBomb.flat();
     //   toFlat.filter((cellNum)=>cellNum === 11)
@@ -205,6 +117,32 @@ const Home = () => {
     setBombMap(newPlotBomb);
     setUserInput(newTapCell);
   };
+  for (let y = 0; y < 9; y++) {
+    for (let x = 0; x < 9; x++) {
+      if (userInput[y][x] === 1) {
+        board[y][x] = 0;
+      }
+      if (bombMap[y][x] === 1) {
+        board[y][x] = 11;
+      }
+      //bomb生成と同時にcell周囲のbombの数を表示
+      let bombCounter = 0;
+      if (bombMap[y][x] === 0) {
+        for (const direction of directions) {
+          {
+            if (
+              bombMap[y + direction[0]] !== undefined &&
+              bombMap[y + direction[0]][x + direction[1]] === 1
+            ) {
+              bombCounter += 1;
+            }
+            board[y][x] = bombCounter;
+          }
+        }
+      }
+    }
+  }
+
   return (
     <div className={styles.container}>
       <div className={styles.boardStyle}>
@@ -217,7 +155,7 @@ const Home = () => {
               key={`${x}-${y}`}
               onClick={() => clickHandler(x, y)}
               //クリックしたuserInputの座標に-1を代入し、spot=== -1の時visibility: `hidden` にするようにする
-              style={{ visibility: spot !== -1 ? `hidden` : `visible` }}
+              style={{ visibility: userInput[y][x] === 1 ? `hidden` : `visible` }}
             >
               {/* {if(spot=== 0){
                   <div className={styles.tapPosStyle} style={{backgroundPosition: `${-30 * tapPos}px, 0px`}}></div>

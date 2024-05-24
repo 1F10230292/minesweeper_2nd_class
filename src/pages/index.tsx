@@ -71,13 +71,51 @@ const plotBomb = (x: number, y: number, bombMap: number[][]) => {
 
   return bombMap;
 };
-const tapCell = (x: number, y: number, userInput: number[][]) => {
-  userInput[y][x] = -1;
+const tapCell = (x: number, y: number, userInput: number[][], bombMap: number[][]) => {
+  userInput[y][x] = 1;
+
+  //自分が置いたcellの八方向のcellの数字が0の時userIptのcellをhiddenにする
+  for (const direction of directions) {
+    if (
+      bombMap[y + direction[0]] !== undefined &&
+      bombMap[y + direction[0]][x + direction[1]] === 0
+    ) {
+      userInput[y + direction[0]][x + direction[1]] = -2;
+      //cell=0の時のcellを開けて、さらにその開けたcellの八方向のうちどれかが0であればcellを開ける
+      for (const direction1 of directions) {
+        for (const direction2 of directions) {
+          if (
+            bombMap[y + direction1[0] + direction2[0]] !== undefined &&
+            bombMap[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] === 0
+          ) {
+            userInput[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] = -2;
+            for (const direction1 of directions) {
+              for (const direction2 of directions) {
+                for (const direction3 of directions) {
+                  if (
+                    bombMap[y + direction1[0] + direction2[0] + direction3[0]] !== undefined &&
+                    bombMap[y + direction1[0] + direction2[0] + direction3[0]][
+                      x + direction1[1] + direction2[1] + direction3[1]
+                    ] === 0
+                  ) {
+                    userInput[y + direction1[0] + direction2[0] + direction3[0]][
+                      x + direction1[1] + direction2[1] + direction3[1]
+                    ] = -2;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  console.log(userInput);
   return userInput;
 };
 
 const Home = () => {
-  const [tapPos, setTapPos] = useState(0);
   // bombの位置を更新し、記憶する関数、useState
   const [bombMap, setBombMap] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -92,6 +130,8 @@ const Home = () => {
   ]);
   const [userInput, setUserInput] = useState([
     //右クリックしたときの表示の順番 旗 -> ？ -> 表示なし -> 旗 -> ？ -> 表示なしをクリックする
+    //0:何もしていない 1:左クリックするとcellが開く 2:右クリック 旗 3:右クリック ?
+
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -102,6 +142,52 @@ const Home = () => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
+  const board = [
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1, -1],
+  ];
+
+  for (let y = 0; y < 9; y++) {
+    for (let x = 0; x < 9; x++) {
+      if (userInput[y][x] === 1) {
+        board[y][x] = 0;
+        //cellの八方向に０がある時そのセルを開ける
+        for (const direction of directions) {
+          if (
+            bombMap[y + direction[0]] !== undefined &&
+            bombMap[y + direction[0]][x + direction[1]] === 0
+          ) {
+            board[y + direction[0]][x + direction[1]] = 0;
+            //同じことを繰り替えす
+            for (const direction1 of directions) {
+              for (const direction2 of directions) {
+                if (
+                  bombMap[y + direction1[0] + direction2[0]] !== undefined &&
+                  bombMap[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] ===
+                    0
+                ) {
+                  board[y + direction1[0] + direction2[0]][x + direction1[1] + direction2[1]] = 0;
+                }
+              }
+            }
+            if (bombMap[y][x] === 11) {
+              board[y][x] = bombMap[y][x];
+            }
+            if (1 <= bombMap[y][x] && bombMap[y][x] <= 8) {
+              board[y][x] = bombMap[y][x];
+            }
+          }
+        }
+      }
+    }
+  }
   //cellをクリックした際の挙動の関数
   const clickHandler = (x: number, y: number) => {
     console.log(x, y);
@@ -110,7 +196,7 @@ const Home = () => {
     const newMap = structuredClone(bombMap);
     const newInput = structuredClone(userInput);
     const newPlotBomb = plotBomb(x, y, newMap);
-    const newTapCell = tapCell(x, y, newInput);
+    const newTapCell = tapCell(x, y, newInput, newPlotBomb);
     // const bombCounter = ()=>{
     //   const toFlat = newPlotBomb.flat();
     //   toFlat.filter((cellNum)=>cellNum === 11)
@@ -119,11 +205,10 @@ const Home = () => {
     setBombMap(newPlotBomb);
     setUserInput(newTapCell);
   };
-
   return (
     <div className={styles.container}>
       <div className={styles.boardStyle}>
-        {userInput.map((row, y) =>
+        {board.map((row, y) =>
           row.map((spot, x) => (
             //x,yそれぞれ0~8の中から一つずつ選びそれをsetBombMapに代入、しかしuserInputしていないところのみ
 
@@ -132,7 +217,7 @@ const Home = () => {
               key={`${x}-${y}`}
               onClick={() => clickHandler(x, y)}
               //クリックしたuserInputの座標に-1を代入し、spot=== -1の時visibility: `hidden` にするようにする
-              style={{ visibility: spot === -1 ? `hidden` : `visible` }}
+              style={{ visibility: spot !== -1 ? `hidden` : `visible` }}
             >
               {/* {if(spot=== 0){
                   <div className={styles.tapPosStyle} style={{backgroundPosition: `${-30 * tapPos}px, 0px`}}></div>
@@ -143,12 +228,12 @@ const Home = () => {
         )}
       </div>
       <div className={styles.boardStyle2}>
-        {bombMap.map((row, y) =>
+        {board.map((row, y) =>
           row.map((spot, x) => (
             //x,yそれぞれ0~8の中から一つずつ選びそれをsetBombMapに代入、しかしuserInputしていないところのみ
             <div className={styles.innerStyle} key={`${x}-${y}`}>
               <div
-                className={styles.sampleStyle}
+                className={styles.imageStyle}
                 style={{ backgroundPosition: `${-30 * (spot - 1)}px, 0px` }}
               />
             </div>

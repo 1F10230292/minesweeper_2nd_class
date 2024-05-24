@@ -9,6 +9,8 @@
 }
 
 .boardStyle {
+  /*  position: absolute;をすると2つのboardが重なる */
+
   /* position: absolute; */
   box-sizing: border-box;
   display: flex;
@@ -16,8 +18,7 @@
   justify-content: space-between;
   width: 720px;
   height: 720px;
-
-  /* visibility: hidden; */
+  visibility: hidden;
 
   /* visibility: visible; */
   background-color: grey;
@@ -34,13 +35,14 @@
 
   /* 値を４つ指定： 上の値 右の値 下の値 左の値 */
   border-color: rgb(204 202 202) gray gray rgb(204 202 202);
+  opacity: 0.5;
 }
 
-.tapPosStyle {
+/* .tapPosStyle {
   width: 30px;
   height: 30px;
   background: url('~/src/assets/images/icons.png') no-repeat;
-}
+} */
 
 .boardStyle2 {
   box-sizing: border-box;
@@ -61,14 +63,14 @@
   justify-content: center;
   width: 70px;
   height: 70px;
-  background-color: rgb(150 147 147);
+  background-color: rgb(204 202 202 / 80%);
   border: solid 1px;
 
   /* 値を４つ指定： 上の値 右の値 下の値 左の値 */
   border-color: rgb(204 202 202) gray gray rgb(204 202 202);
 }
 
-.sampleStyle {
+.imageStyle {
   width: 30px;
   height: 30px;
   background: url('~/src/assets/images/icons.png') no-repeat;

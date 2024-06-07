@@ -10,9 +10,13 @@ const directions = [
   [0, 1],
   [1, 1],
 ];
+
 const Home = () => {
   // bombの位置を更新し、記憶する関数、useState
   const [bombMap, setBombMap] = useState([
+    //0:爆弾無し
+    //1:爆弾有り
+    //2:ゲームオーバーの要因となる爆弾
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -25,7 +29,10 @@ const Home = () => {
   ]);
   const [userInput, setUserInput] = useState([
     //右クリックしたときの表示の順番 旗 -> ？ -> 表示なし -> 旗 -> ？ -> 表示なしをクリックする
-    //0:何もしていない 1:左クリックするとcellが開く 2:右クリック 旗 3:右クリック ?
+    //0:何もしていない
+    //1:左クリックするとcellが開く
+    //2:右クリック ?(はてな)
+    //3:右クリック 旗
 
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -38,16 +45,25 @@ const Home = () => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
 
-  const board = userInput.map((aArray, y) => {
-    return aArray.map((value, x) => {
-      return {
-        value,
-        isOpend: value === 4,
-        hasUserInput: () => value !== 0,
-        isBomb: bombMap[y][x] >= 1,
-      };
-    });
-  });
+  const bombCounts = (x: number, y: number) => {
+    let total = 0;
+    for (const direction of directions) {
+      const calcedX = direction[0] + x;
+      const calcedY = direction[1] + y;
+
+      if (bombMap[calcedY]?.[calcedX] === 11) {
+        //total = total + 1;の事
+        total++;
+      }
+    }
+    return total;
+  };
+
+  //const board = userInput.map((aArray, y) => {
+  // return aArray.map((value, x) => {
+  //
+  // });
+  //});
 
   const getRandomInt = (min: number, max: number) => {
     // Math.random()は0以上1未満の値を返すため、適切な範囲に変換する
@@ -97,33 +113,49 @@ const Home = () => {
 
   //cellをクリックした際の挙動の関数
   const clickHandler = (x: number, y: number) => {
-    userInput[y][x] = 1;
-    //bombMap本体をいじるのはご法度、ゆえにクローンをして、それをいじる。
-    const newMap = structuredClone(bombMap);
+    if (startBombCounts2(bombMap) === 0) {
+      firstTap;
 
-    const newPlotBomb = plotBomb(x, y, newMap);
+      //空白連鎖
+      emptyChainReaction;
+    } else {
+    }
+
+    //bombMap本体をいじるのはご法度、ゆえにクローンをして、それをいじる。
 
     // const bombCounter = ()=>{
     //   const toFlat = newPlotBomb.flat();
     //   toFlat.filter((cellNum)=>cellNum === 11)
     // }
 
-    setBombMap(newPlotBomb);
-
-    emptyChainReaction(x, y, [], userInput);
+    emptyChainReaction(x, y, [], userInput, bombMap);
   };
 
-  //bomb生成 数字生成
-  //タップした場所から八方向を確認した
+  const startBombCounts2 = (bombMap: number[][]) => {
+    return defaultBombSeries(bombMap).filter((bomb) => bomb === 1).length;
+  };
+
+  const firstTap = bombMap.map((row, y) =>
+    row.map((_, x) => {
+      const newMap = structuredClone(bombMap);
+
+      const newPlotBomb = plotBomb(x, y, newMap);
+      newPlotBomb;
+      const newInput = structuredClone(userInput);
+      newInput[y][x] = 1;
+    }),
+  );
+  //↓空白連鎖
   const emptyChainReaction = (
     x: number,
     y: number,
     zeroCellCheck: string[],
     userInput: number[][],
+    bombMap: number[][],
   ) => {
     const newInput = structuredClone(userInput);
     //範囲外の場合はじく
-    if ((!(0 < x && x < 9) && !(0 < y && y < 9)) || bombMap[y] === undefined) {
+    if ((!(0 < x && x < 9) && !(0 < y && y < 9)) || bombMap[y]?.[x]) {
       return;
     }
 
@@ -134,35 +166,17 @@ const Home = () => {
     //今見ているcellの座標を控える、再帰した座標を控える
     zeroCellCheck.push(`${y}-${x}`);
 
-    // その座標に爆弾がない
-    //bombMapにbomb生成と同時にcell周囲のbombの数を表示（置き換える）
-    if (bombMap[y] !== undefined && bombMap[y][x] === 0) {
-      let bombCounter = 0;
-      for (const direction of directions) {
-        if (
-          bombMap[y + direction[0]] !== undefined &&
-          bombMap[y + direction[0]][x + direction[1]] === 11
-        ) {
-          bombCounter += 1;
-        }
-      }
-      bombMap[y][x] = bombCounter;
-      console.log(bombMap[y][x]);
-    }
     //タップしたセルが０以外
-    if (bombMap[y] !== undefined && bombMap[y][x] !== 0) {
-      userInput[y][x] = 1;
+    if (bombMap[y]?.[x] !== 0) {
+      newInput[y][x] = 1;
 
-      return newInput;
+      return setUserInput(newInput);
     }
 
     // 爆弾が周囲にない場合、周辺セルを開示（再帰開始）
     for (const direction of directions) {
-      if (
-        bombMap[y + direction[0]] !== undefined &&
-        bombMap[y + direction[0]][x + direction[1]] !== 0
-      ) {
-        emptyChainReaction(x + direction[0], y + direction[1], zeroCellCheck, userInput);
+      if (bombMap[y + direction[0]]?.[x + direction[1]] !== 0) {
+        emptyChainReaction(x + direction[0], y + direction[1], zeroCellCheck, userInput, bombMap);
       }
     }
     return setUserInput(newInput);

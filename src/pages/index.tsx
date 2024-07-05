@@ -48,10 +48,7 @@ const Home = () => {
   const bombCounts = (x: number, y: number) => {
     let total = 0;
     for (const direction of directions) {
-      const calcedX = direction[0] + x;
-      const calcedY = direction[1] + y;
-
-      if (bombMap[calcedY]?.[calcedX] === 11) {
+      if (bombMap[direction[1] + y]?.[direction[0] + x] === 11) {
         //total = total + 1;の事
         total++;
       }
@@ -59,11 +56,17 @@ const Home = () => {
     return total;
   };
 
-  //const board = userInput.map((aArray, y) => {
-  // return aArray.map((value, x) => {
-  //
-  // });
-  //});
+  const board = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ];
 
   const getRandomInt = (min: number, max: number) => {
     // Math.random()は0以上1未満の値を返すため、適切な範囲に変換する
@@ -167,7 +170,7 @@ const Home = () => {
     zeroCellCheck.push(`${y}-${x}`);
 
     //タップしたセルが０以外
-    if (bombMap[y]?.[x] !== 0) {
+    if (bombMap[y] !== undefined && bombMap[y][x] !== 0) {
       newInput[y][x] = 1;
 
       return setUserInput(newInput);
